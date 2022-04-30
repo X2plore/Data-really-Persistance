@@ -11,12 +11,18 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text highScoreText;
+    public Text playerName;
+    private string playerNameCurrent;
+    private string playerNameHighScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
+    private int highScorePoints;
     
     private bool m_GameOver = false;
+    private bool isHighScore = false;
 
     
     // Start is called before the first frame update
@@ -36,6 +42,22 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        StartNewGame();
+    }
+
+    private void StartNewGame()
+    {
+        if (GameObject.Find("GameManager") != null)
+        {
+            GameManager.instance.LoadHighScore();
+            playerName.text = $"Player: {GameManager.instance.playerName}";
+            playerNameCurrent = GameManager.instance.playerName;
+            playerNameHighScoreText = GameManager.instance.playerNameHighScore;
+            highScorePoints = GameManager.instance.highScore;
+            highScoreText.text = "High Score: " + playerNameHighScoreText + " Score: " + highScorePoints;
+
+        }
+        
     }
 
     private void Update()
@@ -58,6 +80,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                StartNewGame();
             }
         }
     }
@@ -66,11 +89,38 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        if (GameObject.Find("GameManager") != null)
+        {
+            HighScore();
+        }
     }
 
     public void GameOver()
     {
+        if(isHighScore == true)
+        {
+            
+            GameManager.instance.SaveHighScore();
+        }
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+    public void HighScore()
+    {
+        
+        if (m_Points > highScorePoints)
+        {
+            highScorePoints = m_Points;
+            playerNameHighScoreText = playerNameCurrent;
+            highScoreText.text = "High Score: " + playerNameHighScoreText + " Score: " + highScorePoints;
+            GameManager.instance.playerNameHighScore = playerNameHighScoreText;
+            GameManager.instance.highScore = highScorePoints;
+            isHighScore = true;
+        }
+        else
+        {
+            isHighScore = false;
+        }
+        //Debug.Log(m_Points);
     }
 }
